@@ -73,8 +73,10 @@ class Player(pygame.sprite.Sprite):
     def move(self, x, y):
         self.rect.x += x
         self.rect.y += y
-        tile_x = (self.rect.x - 15) // tile_width
-        tile_y = (self.rect.y - 5) // tile_height
+
+        leftTopTile = next(x for x in tiles_group)
+        tile_x = (self.rect.x - 15 - leftTopTile.rect.x) // tile_width
+        tile_y = (self.rect.y - 5 - leftTopTile.rect.y) // tile_height
         if tile_x >= len(level[0]) or tile_x < 0 or tile_y >= len(level) or tile_y < 0:
             self.rect.x -= x
             self.rect.y -= y
@@ -83,6 +85,20 @@ class Player(pygame.sprite.Sprite):
         if collider.type == 'wall':
             self.rect.x -= x
             self.rect.y -= y
+
+
+class Camera:
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
 
 
 def generate_level(level):
@@ -131,6 +147,7 @@ def start_screen():
 def main():
     running = True
 
+    camera = Camera()
     player, level_x, level_y = generate_level(level)
 
     while running:
@@ -146,6 +163,10 @@ def main():
                     player.move(0, -50)
                 if event.key == pygame.K_DOWN:
                     player.move(0, 50)
+
+        camera.update(player)
+        for sprite in all_sprites:
+            camera.apply(sprite)
 
         screen.fill(pygame.Color('black'))
         all_sprites.draw(screen)
