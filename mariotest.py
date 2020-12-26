@@ -13,12 +13,7 @@ def load_level(filename):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
-mapName = input()
-try:
-    level = load_level(mapName)
-except Exception:
-    print('Неверное имя файла')
-    sys.exit()
+level = load_level('mapFile.txt')
 
 pygame.init()
 tile_width = tile_height = 50
