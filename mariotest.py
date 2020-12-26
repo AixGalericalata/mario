@@ -2,8 +2,27 @@ import pygame
 import os
 import sys
 
+
+def load_level(filename):
+    filename = "data/" + filename
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+
+    max_width = max(map(len, level_map))
+
+    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+mapName = input()
+try:
+    level = load_level(mapName)
+except Exception:
+    print('Неверное имя файла')
+    sys.exit()
+
 pygame.init()
-size = width, height = 800, 500
+tile_width = tile_height = 50
+size = width, height = len(level[0]) * tile_width, len(level) * tile_height
 screen = pygame.display.set_mode(size)
 
 all_sprites = pygame.sprite.Group()
@@ -32,17 +51,6 @@ tile_images = {
     'empty': load_image('grass.png')
 }
 player_image = load_image('mar.png')
-tile_width = tile_height = 50
-
-
-def load_level(filename):
-    filename = "data/" + filename
-    with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
-
-    max_width = max(map(len, level_map))
-
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
 class Tile(pygame.sprite.Sprite):
@@ -65,6 +73,12 @@ class Player(pygame.sprite.Sprite):
     def move(self, x, y):
         self.rect.x += x
         self.rect.y += y
+        tile_x = (self.rect.x - 15) // tile_width
+        tile_y = (self.rect.y - 5) // tile_height
+        if tile_x >= len(level[0]) or tile_x < 0 or tile_y >= len(level) or tile_y < 0:
+            self.rect.x -= x
+            self.rect.y -= y
+            return
         collider = pygame.sprite.spritecollideany(self, tiles_group)
         if collider.type == 'wall':
             self.rect.x -= x
@@ -117,7 +131,7 @@ def start_screen():
 def main():
     running = True
 
-    player, level_x, level_y = generate_level(load_level('mapFile.txt'))
+    player, level_x, level_y = generate_level(level)
 
     while running:
         for event in pygame.event.get():
