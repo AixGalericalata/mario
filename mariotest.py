@@ -74,7 +74,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += x
         self.rect.y += y
 
-        leftTopTile = next(x for x in tiles_group)
+        tile_x = width
+        tile_y = height
+        leftTopTile = None
+        for tile in tiles_group:
+            if tile.rect.x <= tile_x and tile.rect.y <= tile_y:
+                leftTopTile = tile
+                tile_x = tile.rect.x
+                tile_y = tile.rect.y
+
         tile_x = (self.rect.x - 15 - leftTopTile.rect.x) // tile_width
         tile_y = (self.rect.y - 5 - leftTopTile.rect.y) // tile_height
         if tile_x >= len(level[0]) or tile_x < 0 or tile_y >= len(level) or tile_y < 0:
@@ -93,8 +101,8 @@ class Camera:
         self.dy = 0
 
     def apply(self, obj):
-        obj.rect.x += self.dx
-        obj.rect.y += self.dy
+        obj.rect.x = (obj.rect.x + self.dx) % width
+        obj.rect.y = (obj.rect.y + self.dy) % height
 
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
